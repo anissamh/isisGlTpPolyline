@@ -1,7 +1,6 @@
 import Konva from "konva";
 import { createMachine, interpret } from "xstate";
 
-
 const stage = new Konva.Stage({
     container: "container",
     width: 400,
@@ -12,17 +11,39 @@ const layer = new Konva.Layer();
 stage.add(layer);
 
 const MAX_POINTS = 10;
-let polyline // La polyline en cours de construction;
+let polyline; // La polyline en cours de construction;
 
 const polylineMachine = createMachine(
     {
-        /** @xstate-layout N4IgpgJg5mDOIC5gF8A0IB2B7CdGgAcsAbATwBkBLDMfEI2SgF0qwzoA9EBaANnVI9eAOgAM4iZMkB2ZGnokK1MMMoRitJAsYs2nRABYATAMQAOAIzCD0gJwXetgwGZezgw9ty5QA */
+        /** @xstate-layout N4IgpgJg5mDOIC5QAcD2AbAngGQJYDswA6XCdMAYgFkB5AVQGUBRAYWwEkWBpAbQAYAuohSpYuAC65U+YSAAeiAIwA2AKxEAzFo0AWAEx8A7AE5jfRcYA0ITIgAceojpOLDfZXr1nVivQF8-azQsPEIiADNcACdYcQACNAJxanpmNk5eQVk0MUlpWQUEVXciVR1lYz1VNwcNO1VrWwRFPjtNZTtWsp9jZT7jAKCMHAJiSJj4xPxk2kYmWgA1Jn4hJBAciSkZNcLVOzaDVT1FRR168z1lRsQAWhPHHT5jQw1lR+VDar07AMCQfFQEDg2WGoTAINyWwKtyuNluFmMTieLze7k+hm+g3WoNGJDI4LWGzy21AhX01wQdkUThcFR0r10KgGf2CIzC41iCVQSQhm3yO0Q+nUhkMnT4GlUdT0Eo0FJ01MqryMT2MLWOiixrLBRFQ4gAFmAogAFbnTXnE6EIfRtDR6M4mTrGTonCkGQxEcXOI4nOzKbSqX5+IA */
         id: "polyLine",
         initial: "idle",
-        states : {
+        states: {
             idle: {
-            }
-        }
+                on: {
+                    MOUSECLICK: {
+                        target: "first point",
+                        actions: "createLine",
+                    },
+                },
+            },
+
+            "first point": {
+                on: {
+                    MOUSEMOVE: {
+                        target: "first point",
+                        internal: true,
+                        actions: ["setLastPoint"],
+                    },
+                    MOUSECLICK: {
+                        target: "otherPoint",
+                        actions: "addPoint",
+                    },
+                },
+            },
+
+            otherPoint: {},
+        },
     },
     // Quelques actions et guardes que vous pouvez utiliser dans votre machine
     {
@@ -67,7 +88,6 @@ const polylineMachine = createMachine(
             // Abandonner le tracé de la polyline
             abandon: (context, event) => {
                 // Supprimer la variable polyline :
-                
             },
             // Supprimer le dernier point de la polyline
             removeLastPoint: (context, event) => {
@@ -84,7 +104,6 @@ const polylineMachine = createMachine(
             pasPlein: (context, event) => {
                 // Retourner vrai si la polyline a moins de 10 points
                 // attention : dans le tableau de points, chaque point est représenté par 2 valeurs (coordonnées x et y)
-                
             },
             // On peut enlever un point
             plusDeDeuxPoints: (context, event) => {
